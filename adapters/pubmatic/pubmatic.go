@@ -418,8 +418,12 @@ func validateAdSlot(adslot string, imp *openrtb2.Imp) error {
 
 		//In case of video, size could be derived from the player size
 		if imp.Banner != nil {
+<<<<<<< HEAD
 			imp.Banner.H = openrtb2.Int64Ptr(int64(height))
 			imp.Banner.W = openrtb2.Int64Ptr(int64(width))
+=======
+			imp.Banner = assignBannerHeightAndWidth(imp.Banner, uint64(height), uint64(width))
+>>>>>>> master
 		}
 	} else {
 		return errors.New(fmt.Sprintf("Invalid adSlot %v", adSlotStr))
@@ -428,25 +432,40 @@ func validateAdSlot(adslot string, imp *openrtb2.Imp) error {
 	return nil
 }
 
+<<<<<<< HEAD
 func assignBannerSize(banner *openrtb2.Banner) error {
 	if banner == nil {
 		return nil
 	}
 
+=======
+func assignBannerSize(banner *openrtb.Banner) (*openrtb.Banner, error) {
+>>>>>>> master
 	if banner.W != nil && banner.H != nil {
-		return nil
+		return banner, nil
 	}
 
 	if len(banner.Format) == 0 {
-		return errors.New(fmt.Sprintf("No sizes provided for Banner %v", banner.Format))
+		return nil, errors.New(fmt.Sprintf("No sizes provided for Banner %v", banner.Format))
 	}
 
+<<<<<<< HEAD
 	banner.W = new(int64)
 	*banner.W = banner.Format[0].W
 	banner.H = new(int64)
 	*banner.H = banner.Format[0].H
+=======
+	return assignBannerHeightAndWidth(banner, banner.Format[0].H, banner.Format[0].H), nil
+}
+>>>>>>> master
 
-	return nil
+func assignBannerHeightAndWidth(banner *openrtb.Banner, h uint64, w uint64) *openrtb.Banner {
+	bannerCopy := *banner
+
+	bannerCopy.W = openrtb.Uint64Ptr(w)
+	bannerCopy.H = openrtb.Uint64Ptr(h)
+
+	return &bannerCopy
 }
 
 // parseImpressionObject parse the imp to get it ready to send to pubmatic
@@ -489,9 +508,11 @@ func parseImpressionObject(imp *openrtb2.Imp, wrapExt *string, pubID *string) er
 	}
 
 	if imp.Banner != nil {
-		if err := assignBannerSize(imp.Banner); err != nil {
+		bannerCopy, err := assignBannerSize(imp.Banner)
+		if err != nil {
 			return err
 		}
+		imp.Banner = bannerCopy
 	}
 
 	if pubmaticExt.Keywords != nil && len(pubmaticExt.Keywords) != 0 {
